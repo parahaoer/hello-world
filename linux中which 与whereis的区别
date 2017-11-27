@@ -1,0 +1,6 @@
+which   [-a]    cmdname1 cmdname2 ......
+作用：locate a command，从环境变量PATH中，定位/返回与指定名字相匹配的可执行文件所在的路径
+
+whereis    [-bmsu]    filename1  filename2 .......
+作用：locate the binary, source, and manual page files for a command.即：定位/返回与指定名字匹配的二进制文件、源文件和帮助手册文件所在的路径。
+           
