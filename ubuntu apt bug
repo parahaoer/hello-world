@@ -1,0 +1,14 @@
+报错：
+E: Encountered a section with no Package: header
+E: Problem with MergeList /var/lib/apt/lists/cn.archive.ubuntu.com_ubuntu_dists_trusty_main_i18n_Translation-en%5fUS
+E: The package lists or status file could not be parsed or opened.
+解决方案：
+1、First remove the Merge
+sudo rm -vf /var/lib/apt/lists/*
+2、 generate a new one by running a simple update
+sudo apt-get update
+
+The options used for rm are -v verbose
+-v, --verbose explain what is being done
+and -f force
+-f, --force ignore nonexistent files and arguments, never prompt
