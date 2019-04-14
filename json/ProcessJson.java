@@ -8,51 +8,117 @@ import java.util.*;
 public class ProcessJson {
 
     public static String reader(String filePath) {
-        try {
-            File file = new File(filePath);
-            if (file.isFile() && file.exists()) {
-                InputStreamReader read = new InputStreamReader(new FileInputStream(file), "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(read);
-                String lineTxt = bufferedReader.readLine();
-                while (lineTxt != null) {
-                    return lineTxt;
+        BufferedReader reader = null;
+        String laststr = "";
+        try{
+            FileInputStream fileInputStream = new FileInputStream(filePath);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+            reader = new BufferedReader(inputStreamReader);
+            String tempString = null;
+            while((tempString = reader.readLine()) != null){
+                laststr += tempString;
+            }
+            reader.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally{
+            if(reader != null){
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (UnsupportedEncodingException | FileNotFoundException e) {
-            System.out.println("Cannot find the file specified!");
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("Error reading file content!");
-            e.printStackTrace();
         }
-        return null;
+        return laststr;
     }
 
-    private static void process(String txtStr) {
-        System.out.println(txtStr);
-        JSONObject json = JSONObject.fromObject(txtStr);
-        JSONArray datas = json.getJSONArray("objects");
-        List<Map<String, Object>> list = new ArrayList<>();
-        for (int i = 0; i < datas.size(); i++) {
-            Map<String, Object> map = new HashMap<>();
-            JSONObject obj = datas.getJSONObject(i).getJSONObject("cells");
-            String name = obj.getString("weibo_name");
-            String code = obj.getString("weibo_id");
-            String url =  obj.getString("url");
+    public static void wirte(String jsonStr) {
 
-            map.put("name", name);
-            map.put("code", code);
-            map.put("url", url);
-            list.add(map);
+        File file = new File("C:/Users/Administrator/Desktop/工作/json/test3.json");
+        char[] stack = new char[1024]; // 存放括号，如 "{","}","[","]"
+        int top = -1;
+        StringBuffer sb = new StringBuffer();
+        char[] charArray = jsonStr.toCharArray();
+        for (int i = 0; i < charArray.length; i++) {
+            char c = charArray[i];
+            if ('{' == c || '[' == c) {
+                stack[++top] = c; // 将括号添加到数组中，这个可以简单理解为栈的入栈
+                sb.append(charArray[i] + "\n");
+                for (int j = 0; j <= top; j++) {
+                    sb.append("\t");
+                }
+                continue;
+            }
+            if ((i + 1) <= (charArray.length - 1)) {
+                char d = charArray[i+1];
+                if ('}' == d || ']' == d) {
+                    top--; // 将数组的最后一个有效内容位置下标减 1，可以简单的理解为将栈顶数据弹出
+                    sb.append(charArray[i] + "\n");
+                    for (int j = 0; j <= top; j++) {
+                        sb.append("\t");
+                    }
+                    continue;
+                }
+            }
+            if (',' == c) {
+                sb.append(charArray[i] + "\n");
+                for (int j = 0; j <= top; j++) {
+                    sb.append("\t");
+                }
+                continue;
+            }
+            sb.append(c);
         }
+
+        Writer write = null;
+        try {
+            write = new FileWriter(file);
+            write.write(sb.toString());
+            write.flush();
+            write.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void process(String srcStr, String destStr) {
+        JSONObject srcjson = JSONObject.fromObject(srcStr);
+        JSONArray srcdatas = srcjson.getJSONArray("objects");
+
+        JSONObject destjson = JSONObject.fromObject(destStr);
+        JSONArray destdatas = destjson.getJSONArray("objects");
+//        List<Map<String, Object>> list = new ArrayList<>();
+        for (int i = 0; i < srcdatas.size(); i++) {
+            System.out.println(srcdatas.get(i));
+            destdatas.add(srcdatas.get(i));
+
+//            Map<String, Object> map = new HashMap<>();
+//            System.out.println(datas.get(i));
+//            JSONObject obj = datas.getJSONObject(i);
+//            String type = obj.getString("type");
+//            String id = obj.getString("id");
+//            String created =  obj.getString("created");
+//
+//            map.put("name", type);
+//            map.put("code", id);
+//            map.put("url", created);
+//            list.add(map);
+        }
+
+        ProcessJson.wirte(destjson.toString());
+
 //        if (!list.isEmpty()) {
 //            insert(list);
 //        }
     }
 
     public static void main(String[] args) {
-        String filePath = "C:/Users/Administrator/Desktop/工作/json/campaign-and-threat-actors.json";
-        String txtString = ProcessJson.reader(filePath);
-        ProcessJson.process(txtString);
+        String destPath = "C:/Users/Administrator/Desktop/工作/json/campaign-and-threat-actors.json";
+        String srcPath = "C:/Users/Administrator/Desktop/工作/json/malicious-email-indicator-with-attachment.json";
+        String srcStr = ProcessJson.reader(srcPath);
+        String destStr = ProcessJson.reader(destPath);
+        ProcessJson.process(srcStr,destStr);
     }
 }
